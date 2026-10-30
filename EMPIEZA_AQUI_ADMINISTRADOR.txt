@@ -1,0 +1,16 @@
+HELPME 2.2: ADMINISTRADOR RESTAURADO Y CLAVE PRIVADA
+
+1) Conservamos el diseño, los reportes, las fotos y las pantallas previas.
+2) Hay un boton visible "Entrar como administrador" y otro "Entrar como ciudadano".
+3) NO aparece ningun PIN en pantalla, instrucciones publicas ni codigo.
+4) SIN FIREBASE: el boton del administrador informa que se debe conectar Firebase.
+   NO existe un administrador autentico ni notificaciones entre celulares.
+5) CON FIREBASE: la administradora entra con correo y contrasena privados.
+   La cuenta solo puede confirmar cierres si tiene admin=true asignado por
+   Firebase Admin SDK desde una computadora de confianza.
+6) Para cambiar la contrasena no tienes que actualizar la APK.
+7) Para activar Firebase, sigue CONFIGURAR_FIREBASE_PASO_A_PASO.md.
+8) Ya incluye Kotlin 2.2.20, Firebase BoM 34.19.0 y la correccion Timestamp.
+9) Abre siempre la carpeta interna HelpMe_2_Guatemala en Android Studio.
+
+NO compartas la contrasena del administrador ni credenciales de Firebase.

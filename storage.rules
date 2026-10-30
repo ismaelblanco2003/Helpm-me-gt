@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /incidents/{ownerUid}/{photoName} {
+      allow read: if request.auth != null;
+      // No subir más de 5 MB ni archivos diferentes a JPEG.
+      allow create: if request.auth != null
+        && request.auth.uid == ownerUid
+        && photoName.matches('[A-Za-z0-9_-]+\\.jpg')
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType == 'image/jpeg';
+      allow update: if false;
+      allow delete: if request.auth != null && request.auth.token.admin == true;
+    }
+  }
+}

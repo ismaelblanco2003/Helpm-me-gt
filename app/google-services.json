@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "119077907706",
+    "project_id": "helpme-guatemala",
+    "storage_bucket": "helpme-guatemala.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:119077907706:android:d173b74f916a602eecad43",
+        "android_client_info": {
+          "package_name": "com.example.helpme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_W3RSrfy1J70sZSRqU0Z4pssCZPdDS9s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

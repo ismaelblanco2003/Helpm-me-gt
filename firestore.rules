@@ -1,0 +1,178 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        request.auth.token.admin == true;
+    }
+
+    function goodStatus(status) {
+      return status in [
+        'Activo',
+        'Por verificar',
+        'Finalizado'
+      ];
+    }
+
+    function validIncident(data) {
+      return data.keys().hasAll([
+          'authorUid',
+          'category',
+          'description',
+          'address',
+          'createdAt',
+          'lat',
+          'lon',
+          'photoPath',
+          'status'
+        ])
+
+        && data.keys().hasOnly([
+          'authorUid',
+          'category',
+          'description',
+          'address',
+          'createdAt',
+          'lat',
+          'lon',
+          'photoPath',
+          'photoBlob',
+          'status'
+        ])
+
+        && data.authorUid is string
+        && data.authorUid.size() > 0
+
+        && data.category is string
+        && data.category.size() > 0
+        && data.category.size() <= 60
+
+        && data.description is string
+        && data.description.size() >= 8
+        && data.description.size() <= 1000
+
+        && data.address is string
+        && data.address.size() <= 250
+
+        && (
+          data.lat == null ||
+          (
+            data.lat is number &&
+            data.lat >= -90 &&
+            data.lat <= 90
+          )
+        )
+
+        && (
+          data.lon == null ||
+          (
+            data.lon is number &&
+            data.lon >= -180 &&
+            data.lon <= 180
+          )
+        )
+
+        && data.photoPath is string
+        && data.photoPath.size() <= 180
+
+        // La fotografía comprimida es opcional.
+        && (
+          !data.keys().hasAny(['photoBlob']) ||
+          (
+            data.photoBlob is bytes &&
+            data.photoBlob.size() <= 650000
+          )
+        )
+
+        && goodStatus(data.status);
+    }
+
+    match /incidents/{incidentId} {
+
+      // Solo usuarios autenticados pueden leer reportes.
+      allow read: if signedIn();
+
+      // Un usuario autenticado puede crear su reporte.
+      allow create: if signedIn()
+        && validIncident(request.resource.data)
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.status == 'Activo'
+        && request.resource.data.createdAt == request.time
+
+        && (
+          request.resource.data.address.size() > 0 ||
+          (
+            request.resource.data.lat != null &&
+            request.resource.data.lon != null
+          )
+        )
+
+        && (
+          request.resource.data.photoPath == '' ||
+          request.resource.data.photoPath ==
+            'incidents/' + request.auth.uid +
+            '/' + incidentId + '.jpg'
+        );
+
+      // Solo un administrador autorizado puede actualizar.
+      // No se permite cambiar el autor ni la foto original.
+      allow update: if isAdmin()
+        && validIncident(request.resource.data)
+        && request.resource.data.authorUid ==
+           resource.data.authorUid
+        && request.resource.data.createdAt ==
+           resource.data.createdAt
+        && request.resource.data.photoPath ==
+           resource.data.photoPath
+        && request.resource.data.get('photoBlob', null) ==
+           resource.data.get('photoBlob', null);
+
+      // Solo un administrador puede eliminar reportes.
+      allow delete: if isAdmin();
+
+      match /closureRequests/{userId} {
+
+        allow read: if isAdmin() ||
+          (
+            signedIn() &&
+            userId == request.auth.uid
+          );
+
+        allow create: if signedIn()
+          && request.auth.uid == userId
+
+          && get(
+            /databases/$(database)/documents/incidents/$(incidentId)
+          ).data.status in [
+            'Activo',
+            'Por verificar'
+          ]
+
+          && request.resource.data.keys().hasOnly([
+            'requestedAt'
+          ])
+
+          && request.resource.data.keys().hasAll([
+            'requestedAt'
+          ])
+
+          && request.resource.data.requestedAt ==
+             request.time;
+
+        allow update, delete: if false;
+      }
+    }
+
+    // Se rechaza cualquier otro acceso no autorizado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

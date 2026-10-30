@@ -1,0 +1,104 @@
+HELPME 2.2 GUATEMALA — PROYECTO ACTUALIZADO
+==============================================
+
+IMPORTANTE: SE RESTABLECIO EL BOTON "ENTRAR COMO ADMINISTRADOR".
+NO SE MUESTRA NI SE INCLUYE NINGUN PIN O CONTRASENA FIJA EN EL CODIGO.
+CON FIREBASE: ENTRADA DE CIUDADANO O ENTRADA DE ADMINISTRADOR,
+AMBAS CON CORREO Y CONTRASENA PROPIA; EL SERVIDOR VERIFICA ADMIN=true.
+
+ESTADO DEL PROYECTO
+- Sin configurar Firebase: abre un modo de demostracion LOCAL solo ciudadano.
+  Los reportes quedan en ese telefono, SIN sincronizacion ni avisos remotos.
+  Se muestra el boton "Entrar como administrador", pero explica que hay
+  que conectar Firebase antes de iniciar sesion administrativa real.
+- Con Firebase y su servidor configurados: cuentas con correo y contrasena,
+  reportes compartidos, fotos, ubicaciones, solicitudes de cierre y alertas
+  nacionales voluntarias. Solo el administrador confirmado puede cerrar.
+- Google Maps se abre mediante el navegador/la app Maps. No hay todavia
+  un mapa interactivo incrustado ni alertas por proximidad o municipio.
+
+PASO 1 — ABRIR EN ANDROID STUDIO
+1. Extrae la carpeta HelpMe_2_Guatemala.
+2. Android Studio -> File -> Open -> HelpMe_2_Guatemala.
+3. Espera Gradle Sync. Usa Gradle JDK 21.
+4. Si NO hay google-services.json, podras generar una APK de DEMOSTRACION
+   (SIN sincronizacion entre celulares ni administrador).
+
+PASO 2 — CONECTAR TU PROPIO FIREBASE
+1. Abre https://console.firebase.google.com/
+2. Crea un proyecto Firebase llamado, por ejemplo, HelpMe Guatemala.
+3. Registra una app Android con identificador EXACTO com.example.helpme
+4. Descarga google-services.json. Copialo en HelpMe_2_Guatemala/app/
+   (junto a app/build.gradle.kts). No lo renombres.
+5. En Firebase -> Authentication -> Sign-in method:
+   habilita Email/Password.
+6. En Firebase -> Firestore Database: crea la base en modo PRODUCTION.
+   Nunca dejes la base abierta: instala firestore.rules.
+7. En Firebase -> Storage: prepara el bucket para fotos.
+   Instala storage.rules antes de permitir subidas.
+8. Para las notificaciones remotas necesitas desplegar Cloud Functions.
+   Estas funciones corren en tu proyecto Firebase, no en el telefono.
+9. IMPORTANTE: Storage/Cloud Functions pueden requerir activar el plan Blaze
+   y una cuenta de facturacion. Si eres estudiante, revisalo con la persona
+   responsable del proyecto antes de activar cobros. No son funciones
+   necesariamente gratuitas.
+
+PASO 3 — INSTALAR REGLAS Y FUNCIONES (UN COMPAÑERO TECNICO / TUTOR)
+1. Instalar Node.js 22 y Firebase CLI en una computadora autorizada.
+2. Abrir una terminal en la carpeta HelpMe_2_Guatemala.
+3. Ejecutar firebase login
+4. Ejecutar firebase use --add (elegir el proyecto Firebase correcto).
+5. En la carpeta functions ejecutar npm install
+6. Regresar a la carpeta HelpMe_2_Guatemala
+7. Ejecutar firebase deploy --only firestore:rules,storage,functions
+8. Confirma que se hayan instalado las reglas y estas funciones:
+   notifyNewIncident y flagClosureForReview.
+
+PASO 4 — CREAR ADMINISTRADOR SEGURO
+1. Instala la app con Firebase y registra una cuenta de ciudadano.
+2. Busca su UID en Firebase Console -> Authentication -> Users.
+3. Solo el responsable tecnico del proyecto puede asignar la custom claim
+   admin=true usando Firebase Admin SDK, desde un entorno de confianza.
+   Incluimos functions/scripts/grant-admin.js como herramienta.
+4. La clave privada de la cuenta de servicio JAMAS se pone en la APK,
+   se envia por WhatsApp, ni se sube a GitHub.
+5. Tras conceder o revocar el rol, el usuario debe cerrar e iniciar sesion.
+   El servidor verifica permisos: ocultar botones no es seguridad.
+6. La administradora inicia sesion mediante el boton "Entrar como administrador"
+   utilizando su correo y contrasena personales. Su CONTRASENA puede cambiarse
+   en Firebase Authentication sin publicar otra APK. El rol es una autorizacion
+   separada (admin=true) y se concede o revoca por UID.
+7. Un usuario normal NO puede convertir su cuenta en administradora.
+   NO distribuyas claves privadas ni contrasenas dentro de APK o ZIP.
+
+PASO 5 — PROBAR EN DOS TELEFONOS
+1. Configura Firebase y despliega sus reglas/funciones.
+2. Genera una nueva APK: Build -> Generate App Bundles or APKs -> Generate APKs.
+3. Instala la MISMA APK en dos telefonos Android.
+4. Crea una cuenta distinta en cada telefono.
+5. En ambos toca 'Activar alertas de Guatemala' y da permiso si se solicita.
+6. Crea un reporte en el telefono A. Aparecera en ambos si Firestore funciona.
+7. En B solicita 'creo que termino': queda 'Por verificar', NO finalizado.
+8. Solo el admin puede confirmar el cierre.
+9. Si no llegan avisos pero aparecen reportes, revisa despliegue de Functions,
+   permiso de notificaciones, conectividad y el plan del proyecto Firebase.
+
+AVISOS Y PRIVACIDAD
+- Las alertas actuales son para todo Guatemala, no solo para usuarios cerca.
+- Todo reporte es ciudadano y NO verificado hasta que un admin compruebe cierre.
+- Usa ubicacion y foto solo con permiso. Evita imagenes de personas heridas.
+- El sistema NO reemplaza a bomberos, policia ni servicios de emergencia.
+- No se migran automaticamente los reportes locales de versiones anteriores.
+- Para un despliegue publico faltan moderacion, proteccion contra spam,
+  privacidad, pruebas en distintos telefonos y mapa integrado.
+
+ARCHIVOS PRINCIPALES
+- app/src/main/java/com/example/helpme/MainActivity.kt: arranque/demo local
+- app/src/main/java/com/example/helpme/CloudActivity.kt: Firebase en linea
+- app/src/main/java/com/example/helpme/HelpMeMessagingService.kt: alertas FCM
+- firestore.rules: permisos de lectura/escritura
+- storage.rules: seguridad de fotografias
+- functions/index.js: envio de alertas y revision de cierres
+- functions/scripts/grant-admin.js: herramienta admin para responsable tecnico
+
+NO ENTREGAR APK COMO 'NOTIFICACIONES EN VIVO' SIN HABER HECHO PASOS 2 Y 3.
